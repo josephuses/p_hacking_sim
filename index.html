@@ -42,17 +42,26 @@
 
         /* Visualization Area */
         .plot-card { 
-            background: #2c3e50; 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
-            display: flex; 
-            flex-direction: column;
-            width: 100%;
+            background: #2c3e50; padding: 20px; border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; width: 100%; align-items: center;
         }
         
         .plot-instructions {
-            color: #d2dae2; font-size: 0.95rem; margin-bottom: 15px; font-weight: bold; text-align: center; width: 100%;
+            color: #d2dae2; font-size: 0.95rem; margin-bottom: 15px; text-align: center; width: 100%;
+            display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 15px;
+        }
+
+        .sacrifice-badge {
+            background: #e74c3c; color: white; padding: 4px 10px; border-radius: 12px; 
+            font-size: 0.85rem; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .sacrifice-badge.pulsate { transform: scale(1.1); }
+        
+        .toggle-container {
+            margin-top: 15px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; 
+            display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+            border: 1px solid #485460; width: 100%;
         }
 
         #plot { width: 100%; display: flex; justify-content: center; }
@@ -62,7 +71,7 @@
             background: #34495e; border-radius: 8px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
         }
         
-        .box-rect { stroke-width: 2px; opacity: 0.4; transition: all 0.3s; }
+        .box-rect { stroke-width: 2px; opacity: 0.6; transition: all 0.3s; }
         .box-line { stroke-width: 2px; transition: all 0.3s; }
         .box-median { stroke-width: 3px; transition: all 0.3s; }
         .legend-text { font-size: 12px; fill: #d2dae2; font-family: 'Segoe UI', sans-serif; }
@@ -75,10 +84,8 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; width: 100%;
         }
         
-        /* Dashboard - Split layout */
-        .p-value-container {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-        }
+        /* Dashboard */
+        .p-value-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         .p-value-display {
             text-align: center; padding: 12px 5px; border-radius: 8px;
@@ -108,25 +115,50 @@
         .grp-a-col { color: #ff7979; }
         .grp-b-col { color: #7ed6df; }
 
-        /* Formula Card */
-        .formula-card {
-            background: #1e272e; padding: 10px; border-radius: 8px; border: 1px solid #485460;
-            font-size: 0.8rem; text-align: center; overflow-x: auto;
+        /* True Effect Switch */
+        .switch-container {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: #1e272e; padding: 12px; border-radius: 8px; border: 1px solid #485460;
         }
-        .formula-card h3 { margin: 5px 0 0 0; font-size: 0.85rem; color: #ffdd59; text-transform: uppercase; }
-        .formula-card p { margin: 5px 0; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #34495e; transition: .3s; border-radius: 22px; border: 1px solid #485460; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: #808e9b; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: #05c46b; border-color: #05c46b; }
+        input:checked + .slider:before { transform: translateX(22px); background-color: white; }
 
         /* Buttons */
+        .action-buttons { display: flex; gap: 5px; }
         button { 
-            padding: 12px; border: none; border-radius: 8px; font-size: 1rem; 
+            padding: 10px; border: none; border-radius: 8px; font-size: 0.95rem; 
             font-weight: bold; cursor: pointer; transition: transform 0.1s, background 0.2s, opacity 0.2s; 
             color: white; width: 100%; 
         }
         button:active { transform: scale(0.98); }
-        .btn-publish { background: #05c46b; box-shadow: 0 4px 0 #009432; margin-top: 5px; }
-        .btn-publish:hover { background: #10ac84; }
-        .btn-publish:disabled { background: #808e9b; box-shadow: none; cursor: not-allowed; opacity: 0.5; transform: none; }
-        .btn-reset { background: #575fcf; box-shadow: 0 4px 0 #3c40c6; margin-top: auto; }
+        button:disabled { background: #808e9b !important; box-shadow: none !important; cursor: not-allowed; opacity: 0.5; transform: none; }
+        
+        .btn-export-csv { background: #16a085; box-shadow: 0 4px 0 #12876f; flex: 1; font-size: 0.85rem; }
+        .btn-export-csv:hover { background: #1abc9c; }
+        
+        .btn-export-png { background: #8e44ad; box-shadow: 0 4px 0 #732d91; flex: 1; font-size: 0.85rem; }
+        .btn-export-png:hover { background: #9b59b6; }
+
+        .btn-publish { background: #05c46b; box-shadow: 0 4px 0 #009432; font-size: 1.1rem; padding: 12px; margin-top: 5px; }
+        .btn-publish:hover:not(:disabled) { background: #10ac84; }
+        
+        .btn-undo { background: #f39c12; box-shadow: 0 4px 0 #e67e22; flex: 1; font-size: 0.85rem; }
+        .btn-undo:hover:not(:disabled) { background: #e67e22; }
+        
+        .btn-redo { background: #3498db; box-shadow: 0 4px 0 #2980b9; flex: 1; font-size: 0.85rem; }
+        .btn-redo:hover:not(:disabled) { background: #2980b9; }
+
+        .btn-restore { background: #7f8fa6; box-shadow: 0 4px 0 #718093; flex: 1; font-size: 0.85rem; }
+        .btn-restore:hover:not(:disabled) { background: #718093; }
+
+        .btn-auto-hack { background: #9b59b6; box-shadow: 0 4px 0 #8e44ad; width: 100%; font-size: 0.95rem; padding: 12px;}
+        .btn-auto-hack:hover:not(:disabled) { background: #8e44ad; }
+
+        .btn-reset { background: #575fcf; box-shadow: 0 4px 0 #3c40c6; margin-top: auto; padding: 12px; font-size: 1.1rem; }
         .btn-reset:hover { background: #3c40c6; }
 
         /* Modal */
@@ -135,9 +167,11 @@
             background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000;
         }
         .modal-content { background: #2c3e50; padding: 40px; border-radius: 12px; text-align: center; max-width: 500px; border: 2px solid #05c46b; }
-        .modal-content h2 { color: #05c46b; margin-top: 0; }
-        .modal-content p { color: #d2dae2; font-size: 1.1rem; }
-        .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #485460; width: 100%; max-width: 1000px; text-align: center; font-size: 0.85rem; color: #808e9b; }
+        .modal-content h2 { color: #05c46b; margin-top: 0; font-size: 2rem;}
+        .modal-content p { color: #d2dae2; font-size: 1.1rem; line-height: 1.5; }
+        .modal-stat { color: #e74c3c; font-weight: bold; font-size: 1.2rem; }
+        
+        .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #485460; width: 100%; max-width: 1100px; text-align: center; font-size: 0.85rem; color: #808e9b; }
         
         @media (max-width: 950px) { .game-container { display: flex; flex-direction: column; } }
     </style>
@@ -145,13 +179,27 @@
 <body>
 
     <h1>The P-Hacking Simulator</h1>
-    <p class="subtitle">Delete outliers to manipulate the variance. Watch how Student's \(t\) (which assumes equal variance) behaves differently than Welch's \(t\)!</p>
+    <p class="subtitle">Delete outliers to manipulate the variance. Watch how Student's \(t\) behaves differently than Welch's \(t\)!</p>
 
     <div class="game-container">
         
         <div class="plot-card">
-            <div class="plot-instructions">Click a dot to remove it. You can publish if EITHER test yields \( p < 0.05 \).</div>
+            <div class="plot-instructions">
+                <span><strong>Click a dot to remove it. You can publish if EITHER test yields \( p < 0.05 \).</strong></span>
+                <span class="sacrifice-badge" id="badge-container">Sacrificed: <span id="sacrificed-count">0</span></span>
+            </div>
             <div id="plot"></div>
+            
+            <div class="toggle-container">
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+                    <input type="checkbox" id="toggle-curve" onchange="updateViz()" style="cursor: pointer; width: 16px; height: 16px;">
+                    Overlay <strong>Current</strong> Normal Distribution
+                </label>
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #bdc3c7;">
+                    <input type="checkbox" id="toggle-original" onchange="updateViz()" style="cursor: pointer; width: 16px; height: 16px;">
+                    Show <strong>Original</strong> Un-Hacked Distribution (True Population)
+                </label>
+            </div>
         </div>
 
         <div class="controls-card">
@@ -161,49 +209,50 @@
                     <div class="p-val-title">Student's P-Value</div>
                     <div class="p-val-number" id="student-p">0.452</div>
                     <div class="p-val-status" id="student-status">Not Significant</div>
-                    <div class="t-stat-readout">
-                        t = <span id="student-t">0.000</span> | df = <span id="student-df">38</span>
-                    </div>
+                    <div class="t-stat-readout">t = <span id="student-t">0.000</span> | df = <span id="student-df">38</span></div>
                 </div>
 
                 <div class="p-value-display" id="welch-box">
                     <div class="p-val-title">Welch's P-Value</div>
                     <div class="p-val-number" id="welch-p">0.452</div>
                     <div class="p-val-status" id="welch-status">Not Significant</div>
-                    <div class="t-stat-readout">
-                        t = <span id="welch-t">0.000</span> | df = <span id="welch-df">38.0</span>
-                    </div>
+                    <div class="t-stat-readout">t = <span id="welch-t">0.000</span> | df = <span id="welch-df">38.0</span></div>
                 </div>
             </div>
 
             <div class="stats-table-container">
                 <table class="stats-table">
                     <thead>
-                        <tr>
-                            <th>Stat</th>
-                            <th class="grp-a-col">Group A</th>
-                            <th class="grp-b-col">Group B</th>
-                        </tr>
+                        <tr><th>Stat</th><th class="grp-a-col">Group A</th><th class="grp-b-col">Group B</th></tr>
                     </thead>
                     <tbody>
                         <tr><td>n</td><td id="nA" class="grp-a-col">-</td><td id="nB" class="grp-b-col">-</td></tr>
                         <tr><td>Mean</td><td id="meanA" class="grp-a-col">-</td><td id="meanB" class="grp-b-col">-</td></tr>
                         <tr><td>Variance</td><td id="varA" class="grp-a-col">-</td><td id="varB" class="grp-b-col">-</td></tr>
-                        <tr><td>Max</td><td id="maxA" class="grp-a-col">-</td><td id="maxB" class="grp-b-col">-</td></tr>
-                        <tr><td>Q3</td><td id="q3A" class="grp-a-col">-</td><td id="q3B" class="grp-b-col">-</td></tr>
-                        <tr><td>Median</td><td id="medA" class="grp-a-col">-</td><td id="medB" class="grp-b-col">-</td></tr>
-                        <tr><td>Q1</td><td id="q1A" class="grp-a-col">-</td><td id="q1B" class="grp-b-col">-</td></tr>
-                        <tr><td>Min</td><td id="minA" class="grp-a-col">-</td><td id="minB" class="grp-b-col">-</td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <div class="formula-card">
-                <h3>Student's t</h3>
-                <p>$$ t = \frac{\bar{X}_1 - \bar{X}_2}{\sqrt{S_p^2 \left(\frac{1}{n_1} + \frac{1}{n_2}\right)}} $$</p>
-                <hr style="border: 0.5px solid #485460; margin: 5px 0;">
-                <h3>Welch's t</h3>
-                <p>$$ t = \frac{\bar{X}_1 - \bar{X}_2}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}} $$</p>
+            <div class="action-buttons">
+                <button class="btn-export-csv" onclick="exportCSV()">📊 Export CSV</button>
+                <button class="btn-export-png" onclick="exportPNG()">🖼️ Export Plot</button>
+            </div>
+
+            <div class="switch-container">
+                <label class="switch">
+                    <input type="checkbox" id="toggle-true-effect" onchange="initSimulation()">
+                    <span class="slider"></span>
+                </label>
+                <span style="font-size: 0.9rem;">Inject <strong>True Effect</strong> (Shift Group B)</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="action-buttons">
+                    <button class="btn-undo" id="btn-undo" onclick="undo()" disabled>↶ Undo</button>
+                    <button class="btn-redo" id="btn-redo" onclick="redo()" disabled>↷ Redo</button>
+                    <button class="btn-restore" id="btn-restore" onclick="restoreData()" disabled>↺ Restore</button>
+                </div>
+                <button class="btn-auto-hack" id="btn-auto-hack" onclick="startAutoHack()">🤖 Auto-Hack The Current Data</button>
             </div>
 
             <button class="btn-publish" id="btn-publish" onclick="publishPaper()" disabled>Publish to Journal!</button>
@@ -214,9 +263,9 @@
 
     <div id="success-modal">
         <div class="modal-content">
-            <h2>🏆 Published!</h2>
-            <p>Congratulations! By selectively discarding data, you forced statistical significance where none existed.</p>
-            <button class="btn-reset" onclick="closeModal()" style="margin-top: 15px;">Try Another Study</button>
+            <h2 id="modal-title">🏆 Published!</h2>
+            <p id="modal-text"></p>
+            <button class="btn-reset" onclick="closeModal()" style="margin-top: 15px; width: auto; padding: 10px 30px;">Try Another Study</button>
         </div>
     </div>
 
@@ -232,6 +281,7 @@
     const svg = d3.select("#plot").append("svg")
         .attr("viewBox", `0 0 600 450`)
         .attr("preserveAspectRatio", "xMidYMid meet")
+        .attr("xmlns", "http://www.w3.org/2000/svg") // Added namespace for PNG export
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -249,14 +299,33 @@
     legend.append("path").attr("d", "M 0 -5 L 5 0 L 0 5 L -5 0 Z").attr("fill", "#ffdd59").attr("stroke", "#1e272e");
     legend.append("text").attr("x", 12).attr("y", 4).attr("class", "legend-text").text("= Mean");
 
+    const originalCurveGroup = svg.append("g").attr("class", "original-curves");
+    const curveGroup = svg.append("g").attr("class", "curves");
     const boxplotGroup = svg.append("g").attr("class", "boxplots");
     const dotsGroup = svg.append("g").attr("class", "dots");
 
+    let initialGroupAData = [];
+    let initialGroupBData = [];
     let groupAData = [];
     let groupBData = [];
+    let initialStatsA = null;
+    let initialStatsB = null;
     let nextId = 0;
+    
+    let undoStack = [];
+    let redoStack = [];
+    let isAutoHacking = false;
+
     const colorA = "#ff7979";
     const colorB = "#7ed6df";
+    const colorOriginal = "#bdc3c7";
+
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey || event.metaKey) {
+            if (event.key.toLowerCase() === 'z') { event.preventDefault(); undo(); } 
+            else if (event.key.toLowerCase() === 'y') { event.preventDefault(); redo(); }
+        }
+    });
 
     function randomNormal(mean, stdDev) {
         let u = 0, v = 0;
@@ -294,60 +363,189 @@
         if (!statsA || !statsB || statsA.n < 2 || statsB.n < 2) {
             return { student: {t: 0, p: 1, df: 0}, welch: {t: 0, p: 1, df: 0} };
         }
-
-        const varA = statsA.variance;
-        const varB = statsB.variance;
+        const varA = statsA.variance; const varB = statsB.variance;
         
-        // --- Student's t-test ---
         const dfStudent = statsA.n + statsB.n - 2;
         const pooledVar = ((statsA.n - 1) * varA + (statsB.n - 1) * varB) / dfStudent;
         const seStudent = Math.sqrt(pooledVar * (1 / statsA.n + 1 / statsB.n));
         const tStudent = seStudent === 0 ? 0 : (statsA.mean - statsB.mean) / seStudent;
         const pStudent = seStudent === 0 ? 1 : jStat.studentt.cdf(-Math.abs(tStudent), dfStudent) * 2;
         
-        // --- Welch's t-test ---
         const seWelch = Math.sqrt((varA / statsA.n) + (varB / statsB.n));
         const tWelch = seWelch === 0 ? 0 : (statsA.mean - statsB.mean) / seWelch;
-        const dfWelchNum = Math.pow((varA / statsA.n) + (varB / statsB.n), 2);
         const dfWelchDen = (Math.pow(varA / statsA.n, 2) / (statsA.n - 1)) + (Math.pow(varB / statsB.n, 2) / (statsB.n - 1));
-        const dfWelch = dfWelchDen === 0 ? 0 : dfWelchNum / dfWelchDen;
+        const dfWelch = dfWelchDen === 0 ? 0 : Math.pow((varA / statsA.n) + (varB / statsB.n), 2) / dfWelchDen;
         const pWelch = (seWelch === 0 || dfWelch === 0) ? 1 : jStat.studentt.cdf(-Math.abs(tWelch), dfWelch) * 2;
         
-        return {
-            student: { t: tStudent, p: pStudent, df: dfStudent },
-            welch: { t: tWelch, p: pWelch, df: dfWelch }
-        };
+        return { student: { t: tStudent, p: pStudent, df: dfStudent }, welch: { t: tWelch, p: pWelch, df: dfWelch } };
     }
 
     function initSimulation() {
+        const hasTrueEffect = document.getElementById('toggle-true-effect').checked;
+        const meanA = 50;
+        const meanB = hasTrueEffect ? 60 : 50; 
+
         groupAData = []; groupBData = []; nextId = 0;
+        undoStack = []; redoStack = []; isAutoHacking = false;
+        document.getElementById('btn-auto-hack').innerText = "🤖 Auto-Hack The Current Data";
 
         let validStart = false;
         while (!validStart) {
-            groupAData = Array.from({length: 20}, () => ({id: nextId++, group: "Group A", val: randomNormal(50, 10)}));
-            groupBData = Array.from({length: 20}, () => ({id: nextId++, group: "Group B", val: randomNormal(50, 10)}));
+            groupAData = Array.from({length: 20}, () => ({id: nextId++, group: "Group A", val: randomNormal(meanA, 10)}));
+            groupBData = Array.from({length: 20}, () => ({id: nextId++, group: "Group B", val: randomNormal(meanB, 10)}));
             
-            let statsA = calculateBoxStats(groupAData, "Group A", colorA);
-            let statsB = calculateBoxStats(groupBData, "Group B", colorB);
-            let tests = calculateTTests(statsA, statsB);
-            
-            // Require both starting p-values to be clearly non-significant
-            if (tests.student.p > 0.15 && tests.welch.p > 0.15) validStart = true;
+            if (hasTrueEffect) {
+                validStart = true;
+            } else {
+                let statsA = calculateBoxStats(groupAData, "Group A", colorA);
+                let statsB = calculateBoxStats(groupBData, "Group B", colorB);
+                let tests = calculateTTests(statsA, statsB);
+                if (tests.student.p > 0.15 && tests.welch.p > 0.15) validStart = true;
+            }
         }
 
-        yScale.domain([10, 90]); 
+        initialGroupAData = JSON.parse(JSON.stringify(groupAData));
+        initialGroupBData = JSON.parse(JSON.stringify(groupBData));
+
+        initialStatsA = calculateBoxStats(groupAData, "Group A", colorOriginal);
+        initialStatsB = calculateBoxStats(groupBData, "Group B", colorOriginal);
+
+        yScale.domain([10, 100]); 
         yAxisGroup.call(d3.axisLeft(yScale));
+        
+        updateHistoryButtons();
         updateViz();
+    }
+
+    function saveState() {
+        undoStack.push({ A: JSON.parse(JSON.stringify(groupAData)), B: JSON.parse(JSON.stringify(groupBData)) });
+        redoStack = []; 
+        updateHistoryButtons();
+    }
+
+    function undo() {
+        if (undoStack.length === 0 || isAutoHacking) return;
+        redoStack.push({ A: JSON.parse(JSON.stringify(groupAData)), B: JSON.parse(JSON.stringify(groupBData)) });
+        let prev = undoStack.pop(); groupAData = prev.A; groupBData = prev.B;
+        pulseBadge(); updateViz(); updateHistoryButtons();
+    }
+
+    function redo() {
+        if (redoStack.length === 0 || isAutoHacking) return;
+        undoStack.push({ A: JSON.parse(JSON.stringify(groupAData)), B: JSON.parse(JSON.stringify(groupBData)) });
+        let next = redoStack.pop(); groupAData = next.A; groupBData = next.B;
+        pulseBadge(); updateViz(); updateHistoryButtons();
+    }
+
+    function restoreData() {
+        if (isAutoHacking) return;
+        saveState();
+        groupAData = JSON.parse(JSON.stringify(initialGroupAData));
+        groupBData = JSON.parse(JSON.stringify(initialGroupBData));
+        pulseBadge(); updateViz(); updateHistoryButtons();
+    }
+
+    function updateHistoryButtons() {
+        document.getElementById('btn-undo').disabled = undoStack.length === 0 || isAutoHacking;
+        document.getElementById('btn-redo').disabled = redoStack.length === 0 || isAutoHacking;
+        
+        const pointsModified = (groupAData.length + groupBData.length) < 40;
+        document.getElementById('btn-restore').disabled = !pointsModified || isAutoHacking;
+    }
+    
+    function pulseBadge() {
+        const badge = document.getElementById('badge-container');
+        badge.classList.remove('pulsate');
+        void badge.offsetWidth; 
+        badge.classList.add('pulsate');
     }
 
     function removePoint(id, group) {
         let currentGroupData = group === "Group A" ? groupAData : groupBData;
-        if (currentGroupData.length <= 2) {
-            alert("Minimum 2 points required per group to run a t-test!"); return;
+        if (currentGroupData.length <= 2) { 
+            if(!isAutoHacking) alert("Minimum 2 points required!"); 
+            return; 
         }
+        
+        saveState(); 
         if (group === "Group A") groupAData = groupAData.filter(d => d.id !== id);
         else groupBData = groupBData.filter(d => d.id !== id);
+        
+        pulseBadge();
+        updateHistoryButtons();
         updateViz();
+    }
+
+    function startAutoHack() {
+        isAutoHacking = true;
+        document.getElementById('btn-auto-hack').disabled = true;
+        document.getElementById('btn-auto-hack').innerText = "⏳ Hacking...";
+        updateHistoryButtons(); 
+        autoHackStep();
+    }
+
+    function autoHackStep() {
+        let statsA = calculateBoxStats(groupAData, "Group A", colorA);
+        let statsB = calculateBoxStats(groupBData, "Group B", colorB);
+        let currentTests = calculateTTests(statsA, statsB);
+        let currentMinP = Math.min(currentTests.student.p, currentTests.welch.p);
+
+        if (currentMinP < 0.05) {
+            isAutoHacking = false;
+            document.getElementById('btn-auto-hack').innerText = "🤖 Auto-Hack The Current Data";
+            updateHistoryButtons();
+            return; 
+        }
+
+        let bestPointId = null;
+        let bestGroup = null;
+        let bestP = currentMinP;
+        const allData = [...groupAData, ...groupBData];
+        
+        for (let pt of allData) {
+            let tempA = groupAData;
+            let tempB = groupBData;
+            
+            if (pt.group === "Group A") {
+                if (groupAData.length <= 2) continue;
+                tempA = groupAData.filter(d => d.id !== pt.id);
+            } else {
+                if (groupBData.length <= 2) continue;
+                tempB = groupBData.filter(d => d.id !== pt.id);
+            }
+
+            let tempStatsA = calculateBoxStats(tempA, "Group A", "");
+            let tempStatsB = calculateBoxStats(tempB, "Group B", "");
+            let tempTests = calculateTTests(tempStatsA, tempStatsB);
+            let tempMinP = Math.min(tempTests.student.p, tempTests.welch.p);
+
+            if (tempMinP < bestP) {
+                bestP = tempMinP;
+                bestPointId = pt.id;
+                bestGroup = pt.group;
+            }
+        }
+
+        if (bestPointId !== null) {
+            removePoint(bestPointId, bestGroup); 
+            
+            statsA = calculateBoxStats(groupAData, "Group A", "");
+            statsB = calculateBoxStats(groupBData, "Group B", "");
+            currentTests = calculateTTests(statsA, statsB);
+            
+            if (Math.min(currentTests.student.p, currentTests.welch.p) < 0.05) {
+                isAutoHacking = false;
+                document.getElementById('btn-auto-hack').innerText = "🤖 Auto-Hack The Current Data";
+                updateHistoryButtons();
+            } else {
+                setTimeout(autoHackStep, 400); 
+            }
+        } else {
+            isAutoHacking = false;
+            document.getElementById('btn-auto-hack').innerText = "🤖 Auto-Hack The Current Data";
+            updateHistoryButtons();
+            alert("Auto-hack reached a dead end without achieving significance! Try manually deleting a few to unstick it.");
+        }
     }
 
     function updateViz() {
@@ -355,13 +553,53 @@
         const statsB = calculateBoxStats(groupBData, "Group B", colorB);
         const boxData = [statsA, statsB].filter(d => d !== null);
         const tests = calculateTTests(statsA, statsB);
-
-        const boxWidth = xScale.bandwidth();
+        
+        const totalCurrentPoints = (statsA ? statsA.n : 0) + (statsB ? statsB.n : 0);
+        const sacrificedPoints = 40 - totalCurrentPoints;
+        document.getElementById('sacrificed-count').innerText = sacrificedPoints;
+        
+        const boxWidth = xScale.bandwidth(); 
         const centerOffset = boxWidth / 2;
+        const curveScale = boxWidth * 3.5;
+
+        function generateBellPath(d, center, scale) {
+            if (!d || d.sd <= 0) return "";
+            const densityData = d3.range(10, 101, 1).map(v => ({ v: v, p: jStat.normal.pdf(v, d.mean, d.sd) }));
+            const lineGenRight = d3.line().x(p => center + p.p * scale).y(p => yScale(p.v)).curve(d3.curveBasis);
+            const lineGenLeft = d3.line().x(p => center - p.p * scale).y(p => yScale(p.v)).curve(d3.curveBasis);
+            
+            const pathRight = lineGenRight(densityData);
+            const pathLeft = lineGenLeft([...densityData].reverse());
+            return pathRight + pathLeft.replace(/^M/, "L") + " Z";
+        }
+
+        const showOriginal = document.getElementById('toggle-original').checked;
+        const origData = showOriginal && initialStatsA && initialStatsB ? [initialStatsA, initialStatsB] : [];
+        const origCurves = originalCurveGroup.selectAll(".orig-curve-path").data(origData, d => d.group);
+
+        origCurves.join(
+            enter => enter.append("path").attr("class", "orig-curve-path").attr("fill", "none")
+                .attr("stroke", d => d.color).attr("stroke-width", 2).attr("stroke-dasharray", "4 6").attr("opacity", 0.8)
+                .attr("transform", d => `translate(${xScale(d.group)}, 0)`)
+                .attr("d", d => generateBellPath(d, centerOffset, curveScale)),
+            update => update.transition().duration(300).attr("d", d => generateBellPath(d, centerOffset, curveScale)),
+            exit => exit.transition().duration(200).style("opacity", 0).remove()
+        );
+
+        const showCurve = document.getElementById('toggle-curve').checked;
+        const curves = curveGroup.selectAll(".curve-path").data(showCurve ? boxData : [], d => d.group);
+
+        curves.join(
+            enter => enter.append("path").attr("class", "curve-path").attr("fill", d => d.color).attr("fill-opacity", 0.15)
+                .attr("stroke", d => d.color).attr("stroke-width", 2).attr("stroke-dasharray", "2 2")
+                .attr("transform", d => `translate(${xScale(d.group)}, 0)`)
+                .attr("d", d => generateBellPath(d, centerOffset, curveScale)),
+            update => update.transition().duration(300).attr("d", d => generateBellPath(d, centerOffset, curveScale)),
+            exit => exit.transition().duration(200).style("opacity", 0).remove()
+        );
 
         const boxes = boxplotGroup.selectAll(".boxplot-group")
-            .data(boxData, d => d.group)
-            .join("g").attr("class", "boxplot-group")
+            .data(boxData, d => d.group).join("g").attr("class", "boxplot-group")
             .attr("transform", d => `translate(${xScale(d.group)}, 0)`);
         
         boxes.selectAll(".box-line").data(d => [d]).join("line").attr("class", "box-line")
@@ -401,7 +639,7 @@
             enter => enter.append("circle").attr("class", "dot")
                 .attr("cx", d => xScale(d.group) + centerOffset + d.jitter).attr("cy", d => yScale(d.val))
                 .attr("r", 0).attr("fill", d => d.group === "Group A" ? colorA : colorB)
-                .on("click", function(event, d) { removePoint(d.id, d.group); })
+                .on("click", function(event, d) { if(!isAutoHacking) removePoint(d.id, d.group); })
                 .call(enter => enter.transition().duration(300).attr("r", 6)),
             update => update.call(update => update.transition().duration(300)
                     .attr("cx", d => xScale(d.group) + centerOffset + d.jitter).attr("cy", d => yScale(d.val))),
@@ -409,54 +647,119 @@
         );
 
         function updateCol(grp, stats) {
-            document.getElementById(`n${grp}`).innerText = stats.n;
-            document.getElementById(`mean${grp}`).innerText = stats.mean.toFixed(2);
-            document.getElementById(`var${grp}`).innerText = stats.variance.toFixed(2); // Using variance instead of SD to align with formulas
-            document.getElementById(`max${grp}`).innerText = stats.max.toFixed(2);
-            document.getElementById(`q3${grp}`).innerText = stats.q3.toFixed(2);
-            document.getElementById(`med${grp}`).innerText = stats.median.toFixed(2);
-            document.getElementById(`q1${grp}`).innerText = stats.q1.toFixed(2);
-            document.getElementById(`min${grp}`).innerText = stats.min.toFixed(2);
+            document.getElementById(`n${grp}`).innerText = stats ? stats.n : 0;
+            document.getElementById(`mean${grp}`).innerText = stats ? stats.mean.toFixed(2) : '-';
+            document.getElementById(`var${grp}`).innerText = stats ? stats.variance.toFixed(2) : '-'; 
         }
-        
         updateCol('A', statsA); updateCol('B', statsB);
 
-        // Update Student Dashboard
+        const sigReached = tests.student.p < 0.05 || tests.welch.p < 0.05;
+        
         document.getElementById('student-p').innerText = tests.student.p.toFixed(4);
         document.getElementById('student-t').innerText = tests.student.t.toFixed(3);
         document.getElementById('student-df').innerText = tests.student.df.toFixed(0);
-        
         const studentBox = document.getElementById('student-box');
         const studentStatus = document.getElementById('student-status');
-        if (tests.student.p < 0.05) {
-            studentBox.classList.add('significant'); studentStatus.innerText = "Significant!";
-        } else {
-            studentBox.classList.remove('significant'); studentStatus.innerText = "Not Sig.";
-        }
+        if (tests.student.p < 0.05) { studentBox.classList.add('significant'); studentStatus.innerText = "Significant!"; }
+        else { studentBox.classList.remove('significant'); studentStatus.innerText = "Not Sig."; }
 
-        // Update Welch Dashboard
         document.getElementById('welch-p').innerText = tests.welch.p.toFixed(4);
         document.getElementById('welch-t').innerText = tests.welch.t.toFixed(3);
         document.getElementById('welch-df').innerText = tests.welch.df.toFixed(1);
-        
         const welchBox = document.getElementById('welch-box');
         const welchStatus = document.getElementById('welch-status');
-        if (tests.welch.p < 0.05) {
-            welchBox.classList.add('significant'); welchStatus.innerText = "Significant!";
-        } else {
-            welchBox.classList.remove('significant'); welchStatus.innerText = "Not Sig.";
-        }
+        if (tests.welch.p < 0.05) { welchBox.classList.add('significant'); welchStatus.innerText = "Significant!"; }
+        else { welchBox.classList.remove('significant'); welchStatus.innerText = "Not Sig."; }
 
-        // Enable button if EITHER is significant
-        const btnPublish = document.getElementById('btn-publish');
-        if (tests.student.p < 0.05 || tests.welch.p < 0.05) {
-            btnPublish.disabled = false;
-        } else {
-            btnPublish.disabled = true;
+        document.getElementById('btn-publish').disabled = !sigReached || isAutoHacking;
+        if (!isAutoHacking) {
+            document.getElementById('btn-auto-hack').disabled = sigReached; 
         }
     }
 
-    function publishPaper() { document.getElementById('success-modal').style.display = 'flex'; }
+    function exportCSV() {
+        let csv = "ID,Group,Value\n";
+        const allData = [...groupAData, ...groupBData].sort((a,b) => a.id - b.id);
+        allData.forEach(row => {
+            csv += `${row.id},${row.group},${row.val.toFixed(4)}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "hacked_dataset.csv");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function exportPNG() {
+        const svgElement = document.querySelector("#plot svg");
+        const clonedSvg = svgElement.cloneNode(true);
+        
+        // Inject styles so the exported PNG looks right without external CSS
+        const style = document.createElement("style");
+        style.textContent = `
+            svg { background: #34495e; font-family: 'Segoe UI', Tahoma, sans-serif; }
+            .box-rect { stroke-width: 2px; opacity: 0.6; }
+            .box-line { stroke-width: 2px; }
+            .box-median { stroke-width: 3px; }
+            .legend-text { font-size: 12px; fill: #d2dae2; }
+            .dot { stroke: #1e272e; stroke-width: 1px; opacity: 0.9; }
+            text { fill: #d2dae2; font-family: 'Segoe UI', Tahoma, sans-serif; }
+            .domain, .tick line { stroke: #d2dae2; }
+            .orig-curve-path { stroke-width: 2px; stroke-dasharray: 4 6; opacity: 0.8; }
+            .curve-path { stroke-width: 2px; stroke-dasharray: 2 2; }
+        `;
+        clonedSvg.insertBefore(style, clonedSvg.firstChild);
+        
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(clonedSvg);
+        const img = new Image();
+        const svgBlob = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
+        const url = URL.createObjectURL(svgBlob);
+        
+        img.onload = function() {
+            const canvas = document.createElement("canvas");
+            const scale = 3; // 3x scale for high-res output
+            canvas.width = 600 * scale;
+            canvas.height = 450 * scale;
+            const ctx = canvas.getContext("2d");
+            ctx.scale(scale, scale);
+            ctx.drawImage(img, 0, 0, 600, 450);
+            
+            const pngUrl = canvas.toDataURL("image/png");
+            const link = document.createElement("a");
+            link.download = "p_hacked_plot.png";
+            link.href = pngUrl;
+            link.click();
+            URL.revokeObjectURL(url);
+        };
+        img.src = url;
+    }
+
+    function publishPaper() { 
+        const hasTrueEffect = document.getElementById('toggle-true-effect').checked;
+        const sacrificed = parseInt(document.getElementById('sacrificed-count').innerText);
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+        
+        if (hasTrueEffect && sacrificed === 0) {
+            modalTitle.innerText = "🏆 Published!";
+            modalText.innerHTML = "Congratulations! You discovered a <strong>real, underlying effect</strong> without having to manipulate your data. This is how science is supposed to work!";
+        } else if (hasTrueEffect && sacrificed > 0) {
+            modalTitle.innerText = "🏆 Published... but why?";
+            modalText.innerHTML = `You had a real effect, but you still selectively discarded <span class="modal-stat">${sacrificed}</span> data points to make the p-value even smaller! Old habits die hard?`;
+        } else {
+            modalTitle.innerText = "🏆 Published!";
+            modalText.innerHTML = `Congratulations! By selectively discarding <span class="modal-stat">${sacrificed}</span> data points, you successfully forced statistical significance where none existed. <br><br><span style="font-size: 0.9rem; color: #808e9b;">(The peer reviewers didn't notice a thing.)</span>`;
+        }
+
+        document.getElementById('success-modal').style.display = 'flex'; 
+    }
+    
     function closeModal() { document.getElementById('success-modal').style.display = 'none'; initSimulation(); }
 
     initSimulation();
