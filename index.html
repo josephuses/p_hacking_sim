@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The P-Hacking Simulator</title>
+    
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.5/jstat.min.js"></script>
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Global Reset */
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: #1e272e; 
+            color: #d2dae2; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            margin: 0; 
+            min-height: 100vh;
+        }
+        
+        h1 { margin: 0 0 5px 0; color: #ffdd59; text-align: center; }
+        p.subtitle { color: #808e9b; margin-top: 0; margin-bottom: 20px; text-align: center; max-width: 600px; }
+
+        .game-container { 
+            max-width: 1100px; 
+            width: 100%; 
+            display: grid; 
+            grid-template-columns: 1fr 420px; 
+            gap: 20px; 
+            flex: 1;
+        }
+
+        /* Visualization Area */
+        .plot-card { 
+            background: #2c3e50; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            display: flex; 
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .plot-instructions {
+            color: #d2dae2; font-size: 0.95rem; margin-bottom: 15px; font-weight: bold; text-align: center; width: 100%;
+        }
+
+        #plot { width: 100%; display: flex; justify-content: center; }
+        
+        svg { 
+            width: 100%; height: auto; max-height: 550px; 
+            background: #34495e; border-radius: 8px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .box-rect { stroke-width: 2px; opacity: 0.4; transition: all 0.3s; }
+        .box-line { stroke-width: 2px; transition: all 0.3s; }
+        .box-median { stroke-width: 3px; transition: all 0.3s; }
+        .legend-text { font-size: 12px; fill: #d2dae2; font-family: 'Segoe UI', sans-serif; }
+        .dot { stroke: #1e272e; stroke-width: 1px; cursor: pointer; opacity: 0.9; }
+        .dot:hover { stroke: #ffdd59; stroke-width: 2px; opacity: 1; }
+
+        /* Controls Area */
+        .controls-card { 
+            background: #2c3e50; padding: 20px; border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; width: 100%;
+        }
+        
+        /* Dashboard - Split layout */
+        .p-value-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+
+        .p-value-display {
+            text-align: center; padding: 12px 5px; border-radius: 8px;
+            background: #e74c3c; color: white; transition: background 0.3s;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .p-value-display.significant { background: #05c46b; }
+        
+        .p-val-title { font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; }
+        .p-val-number { font-size: 2rem; font-weight: bold; margin: 5px 0; font-family: monospace; }
+        .p-val-status { font-size: 0.85rem; font-weight: bold; }
+        
+        .t-stat-readout {
+            font-size: 0.75rem; margin-top: 8px; font-family: monospace; opacity: 0.9;
+            background: rgba(0,0,0,0.15); padding: 4px; border-radius: 4px;
+        }
+
+        /* Stats Table */
+        .stats-table-container {
+            background: #34495e; border-radius: 8px; border: 1px solid #485460; padding: 10px; overflow-x: auto;
+        }
+        table.stats-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: center; }
+        .stats-table th { color: #808e9b; text-transform: uppercase; padding-bottom: 6px; border-bottom: 1px solid #485460; font-weight: bold; }
+        .stats-table td { padding: 3px 0; font-family: monospace; font-size: 0.9rem; }
+        .stats-table tr:nth-child(even) { background: rgba(0,0,0,0.1); }
+        .stats-table td:first-child { text-align: left; font-family: 'Segoe UI', Tahoma, sans-serif; font-weight: bold; color: #d2dae2; }
+        .grp-a-col { color: #ff7979; }
+        .grp-b-col { color: #7ed6df; }
+
+        /* Formula Card */
+        .formula-card {
+            background: #1e272e; padding: 10px; border-radius: 8px; border: 1px solid #485460;
+            font-size: 0.8rem; text-align: center; overflow-x: auto;
+        }
+        .formula-card h3 { margin: 5px 0 0 0; font-size: 0.85rem; color: #ffdd59; text-transform: uppercase; }
+        .formula-card p { margin: 5px 0; }
+
+        /* Buttons */
+        button { 
+            padding: 12px; border: none; border-radius: 8px; font-size: 1rem; 
+            font-weight: bold; cursor: pointer; transition: transform 0.1s, background 0.2s, opacity 0.2s; 
+            color: white; width: 100%; 
+        }
+        button:active { transform: scale(0.98); }
+        .btn-publish { background: #05c46b; box-shadow: 0 4px 0 #009432; margin-top: 5px; }
+        .btn-publish:hover { background: #10ac84; }
+        .btn-publish:disabled { background: #808e9b; box-shadow: none; cursor: not-allowed; opacity: 0.5; transform: none; }
+        .btn-reset { background: #575fcf; box-shadow: 0 4px 0 #3c40c6; margin-top: auto; }
+        .btn-reset:hover { background: #3c40c6; }
+
+        /* Modal */
+        #success-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content { background: #2c3e50; padding: 40px; border-radius: 12px; text-align: center; max-width: 500px; border: 2px solid #05c46b; }
+        .modal-content h2 { color: #05c46b; margin-top: 0; }
+        .modal-content p { color: #d2dae2; font-size: 1.1rem; }
+        .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #485460; width: 100%; max-width: 1000px; text-align: center; font-size: 0.85rem; color: #808e9b; }
+        
+        @media (max-width: 950px) { .game-container { display: flex; flex-direction: column; } }
+    </style>
+</head>
+<body>
+
+    <h1>The P-Hacking Simulator</h1>
+    <p class="subtitle">Delete outliers to manipulate the variance. Watch how Student's \(t\) (which assumes equal variance) behaves differently than Welch's \(t\)!</p>
+
+    <div class="game-container">
+        
+        <div class="plot-card">
+            <div class="plot-instructions">Click a dot to remove it. You can publish if EITHER test yields \( p < 0.05 \).</div>
+            <div id="plot"></div>
+        </div>
+
+        <div class="controls-card">
+            
+            <div class="p-value-container">
+                <div class="p-value-display" id="student-box">
+                    <div class="p-val-title">Student's P-Value</div>
+                    <div class="p-val-number" id="student-p">0.452</div>
+                    <div class="p-val-status" id="student-status">Not Significant</div>
+                    <div class="t-stat-readout">
+                        t = <span id="student-t">0.000</span> | df = <span id="student-df">38</span>
+                    </div>
+                </div>
+
+                <div class="p-value-display" id="welch-box">
+                    <div class="p-val-title">Welch's P-Value</div>
+                    <div class="p-val-number" id="welch-p">0.452</div>
+                    <div class="p-val-status" id="welch-status">Not Significant</div>
+                    <div class="t-stat-readout">
+                        t = <span id="welch-t">0.000</span> | df = <span id="welch-df">38.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-table-container">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Stat</th>
+                            <th class="grp-a-col">Group A</th>
+                            <th class="grp-b-col">Group B</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>n</td><td id="nA" class="grp-a-col">-</td><td id="nB" class="grp-b-col">-</td></tr>
+                        <tr><td>Mean</td><td id="meanA" class="grp-a-col">-</td><td id="meanB" class="grp-b-col">-</td></tr>
+                        <tr><td>Variance</td><td id="varA" class="grp-a-col">-</td><td id="varB" class="grp-b-col">-</td></tr>
+                        <tr><td>Max</td><td id="maxA" class="grp-a-col">-</td><td id="maxB" class="grp-b-col">-</td></tr>
+                        <tr><td>Q3</td><td id="q3A" class="grp-a-col">-</td><td id="q3B" class="grp-b-col">-</td></tr>
+                        <tr><td>Median</td><td id="medA" class="grp-a-col">-</td><td id="medB" class="grp-b-col">-</td></tr>
+                        <tr><td>Q1</td><td id="q1A" class="grp-a-col">-</td><td id="q1B" class="grp-b-col">-</td></tr>
+                        <tr><td>Min</td><td id="minA" class="grp-a-col">-</td><td id="minB" class="grp-b-col">-</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="formula-card">
+                <h3>Student's t</h3>
+                <p>$$ t = \frac{\bar{X}_1 - \bar{X}_2}{\sqrt{S_p^2 \left(\frac{1}{n_1} + \frac{1}{n_2}\right)}} $$</p>
+                <hr style="border: 0.5px solid #485460; margin: 5px 0;">
+                <h3>Welch's t</h3>
+                <p>$$ t = \frac{\bar{X}_1 - \bar{X}_2}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}} $$</p>
+            </div>
+
+            <button class="btn-publish" id="btn-publish" onclick="publishPaper()" disabled>Publish to Journal!</button>
+            <button class="btn-reset" onclick="initSimulation()">Generate New "Study"</button>
+
+        </div>
+    </div>
+
+    <div id="success-modal">
+        <div class="modal-content">
+            <h2>🏆 Published!</h2>
+            <p>Congratulations! By selectively discarding data, you forced statistical significance where none existed.</p>
+            <button class="btn-reset" onclick="closeModal()" style="margin-top: 15px;">Try Another Study</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 Joseph S. Tabadero, Jr. | Educational MIT License.
+    </div>
+
+<script>
+    const margin = {top: 40, right: 30, bottom: 40, left: 50};
+    const width = 600 - margin.left - margin.right;
+    const height = 450 - margin.top - margin.bottom;
+
+    const svg = d3.select("#plot").append("svg")
+        .attr("viewBox", `0 0 600 450`)
+        .attr("preserveAspectRatio", "xMidYMid meet")
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const xScale = d3.scaleBand().range([0, width]).domain(["Group A", "Group B"]).padding(0.4);
+    const yScale = d3.scaleLinear().range([height, 0]);
+
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(xScale))
+        .attr("font-size", "15px").attr("font-weight", "bold").attr("color", "#d2dae2");
+
+    const yAxisGroup = svg.append("g").attr("color", "#d2dae2");
+
+    const legend = svg.append("g").attr("transform", `translate(${width - 100}, -20)`);
+    legend.append("path").attr("d", "M 0 -5 L 5 0 L 0 5 L -5 0 Z").attr("fill", "#ffdd59").attr("stroke", "#1e272e");
+    legend.append("text").attr("x", 12).attr("y", 4).attr("class", "legend-text").text("= Mean");
+
+    const boxplotGroup = svg.append("g").attr("class", "boxplots");
+    const dotsGroup = svg.append("g").attr("class", "dots");
+
+    let groupAData = [];
+    let groupBData = [];
+    let nextId = 0;
+    const colorA = "#ff7979";
+    const colorB = "#7ed6df";
+
+    function randomNormal(mean, stdDev) {
+        let u = 0, v = 0;
+        while(u === 0) u = Math.random(); 
+        while(v === 0) v = Math.random();
+        return (Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)) * stdDev + mean;
+    }
+
+    function calculateBoxStats(dataArr, groupName, color) {
+        if (dataArr.length === 0) return null;
+        let vals = dataArr.map(d => d.val).sort(d3.ascending);
+        
+        let q1 = d3.quantile(vals, 0.25);
+        let median = d3.quantile(vals, 0.5);
+        let q3 = d3.quantile(vals, 0.75);
+        let iqr = q3 - q1;
+        
+        let lowerFence = q1 - 1.5 * iqr;
+        let upperFence = q3 + 1.5 * iqr;
+
+        let whiskerBottom = vals.find(v => v >= lowerFence) ?? vals[0];
+        let whiskerTop = vals.slice().reverse().find(v => v <= upperFence) ?? vals[vals.length - 1];
+        
+        let sd = d3.deviation(vals) || 0;
+
+        return {
+            group: groupName, color: color, n: vals.length,
+            min: vals[0], q1: q1, median: median, q3: q3, max: vals[vals.length - 1],
+            mean: d3.mean(vals), sd: sd, variance: Math.pow(sd, 2),
+            whiskerBottom: whiskerBottom, whiskerTop: whiskerTop
+        };
+    }
+
+    function calculateTTests(statsA, statsB) {
+        if (!statsA || !statsB || statsA.n < 2 || statsB.n < 2) {
+            return { student: {t: 0, p: 1, df: 0}, welch: {t: 0, p: 1, df: 0} };
+        }
+
+        const varA = statsA.variance;
+        const varB = statsB.variance;
+        
+        // --- Student's t-test ---
+        const dfStudent = statsA.n + statsB.n - 2;
+        const pooledVar = ((statsA.n - 1) * varA + (statsB.n - 1) * varB) / dfStudent;
+        const seStudent = Math.sqrt(pooledVar * (1 / statsA.n + 1 / statsB.n));
+        const tStudent = seStudent === 0 ? 0 : (statsA.mean - statsB.mean) / seStudent;
+        const pStudent = seStudent === 0 ? 1 : jStat.studentt.cdf(-Math.abs(tStudent), dfStudent) * 2;
+        
+        // --- Welch's t-test ---
+        const seWelch = Math.sqrt((varA / statsA.n) + (varB / statsB.n));
+        const tWelch = seWelch === 0 ? 0 : (statsA.mean - statsB.mean) / seWelch;
+        const dfWelchNum = Math.pow((varA / statsA.n) + (varB / statsB.n), 2);
+        const dfWelchDen = (Math.pow(varA / statsA.n, 2) / (statsA.n - 1)) + (Math.pow(varB / statsB.n, 2) / (statsB.n - 1));
+        const dfWelch = dfWelchDen === 0 ? 0 : dfWelchNum / dfWelchDen;
+        const pWelch = (seWelch === 0 || dfWelch === 0) ? 1 : jStat.studentt.cdf(-Math.abs(tWelch), dfWelch) * 2;
+        
+        return {
+            student: { t: tStudent, p: pStudent, df: dfStudent },
+            welch: { t: tWelch, p: pWelch, df: dfWelch }
+        };
+    }
+
+    function initSimulation() {
+        groupAData = []; groupBData = []; nextId = 0;
+
+        let validStart = false;
+        while (!validStart) {
+            groupAData = Array.from({length: 20}, () => ({id: nextId++, group: "Group A", val: randomNormal(50, 10)}));
+            groupBData = Array.from({length: 20}, () => ({id: nextId++, group: "Group B", val: randomNormal(50, 10)}));
+            
+            let statsA = calculateBoxStats(groupAData, "Group A", colorA);
+            let statsB = calculateBoxStats(groupBData, "Group B", colorB);
+            let tests = calculateTTests(statsA, statsB);
+            
+            // Require both starting p-values to be clearly non-significant
+            if (tests.student.p > 0.15 && tests.welch.p > 0.15) validStart = true;
+        }
+
+        yScale.domain([10, 90]); 
+        yAxisGroup.call(d3.axisLeft(yScale));
+        updateViz();
+    }
+
+    function removePoint(id, group) {
+        let currentGroupData = group === "Group A" ? groupAData : groupBData;
+        if (currentGroupData.length <= 2) {
+            alert("Minimum 2 points required per group to run a t-test!"); return;
+        }
+        if (group === "Group A") groupAData = groupAData.filter(d => d.id !== id);
+        else groupBData = groupBData.filter(d => d.id !== id);
+        updateViz();
+    }
+
+    function updateViz() {
+        const statsA = calculateBoxStats(groupAData, "Group A", colorA);
+        const statsB = calculateBoxStats(groupBData, "Group B", colorB);
+        const boxData = [statsA, statsB].filter(d => d !== null);
+        const tests = calculateTTests(statsA, statsB);
+
+        const boxWidth = xScale.bandwidth();
+        const centerOffset = boxWidth / 2;
+
+        const boxes = boxplotGroup.selectAll(".boxplot-group")
+            .data(boxData, d => d.group)
+            .join("g").attr("class", "boxplot-group")
+            .attr("transform", d => `translate(${xScale(d.group)}, 0)`);
+        
+        boxes.selectAll(".box-line").data(d => [d]).join("line").attr("class", "box-line")
+            .attr("stroke", d => d.color).transition().duration(300)
+            .attr("x1", centerOffset).attr("x2", centerOffset).attr("y1", d => yScale(d.whiskerBottom)).attr("y2", d => yScale(d.whiskerTop));
+
+        boxes.selectAll(".cap-top").data(d => [d]).join("line").attr("class", "cap-top")
+            .attr("stroke", d => d.color).attr("stroke-width", 2).transition().duration(300)
+            .attr("x1", centerOffset - 10).attr("x2", centerOffset + 10).attr("y1", d => yScale(d.whiskerTop)).attr("y2", d => yScale(d.whiskerTop));
+
+        boxes.selectAll(".cap-bottom").data(d => [d]).join("line").attr("class", "cap-bottom")
+            .attr("stroke", d => d.color).attr("stroke-width", 2).transition().duration(300)
+            .attr("x1", centerOffset - 10).attr("x2", centerOffset + 10).attr("y1", d => yScale(d.whiskerBottom)).attr("y2", d => yScale(d.whiskerBottom));
+
+        boxes.selectAll(".box-rect").data(d => [d]).join("rect").attr("class", "box-rect")
+            .attr("fill", d => d.color).attr("stroke", d => d.color).transition().duration(300)
+            .attr("x", 0).attr("width", boxWidth).attr("y", d => yScale(d.q3))
+            .attr("height", d => Math.max(1, Math.abs(yScale(d.q1) - yScale(d.q3))));
+
+        boxes.selectAll(".box-median").data(d => [d]).join("line").attr("class", "box-median")
+            .attr("stroke", d => d.color).transition().duration(300)
+            .attr("x1", 0).attr("x2", boxWidth).attr("y1", d => yScale(d.median)).attr("y2", d => yScale(d.median));
+
+        boxes.selectAll(".box-mean").data(d => [d]).join("path").attr("class", "box-mean")
+            .attr("fill", "#ffdd59").attr("stroke", "#1e272e").attr("stroke-width", 1)
+            .transition().duration(300).attr("d", d => {
+                let x = centerOffset; let y = yScale(d.mean); let size = 6;
+                return `M ${x} ${y - size} L ${x + size} ${y} L ${x} ${y + size} L ${x - size} ${y} Z`;
+            });
+
+        const allData = [...groupAData, ...groupBData];
+        const jitterWidth = boxWidth * 0.4;
+        allData.forEach(d => { if (d.jitter === undefined) d.jitter = (Math.random() - 0.5) * jitterWidth; });
+
+        const dots = dotsGroup.selectAll(".dot").data(allData, d => d.id);
+        dots.join(
+            enter => enter.append("circle").attr("class", "dot")
+                .attr("cx", d => xScale(d.group) + centerOffset + d.jitter).attr("cy", d => yScale(d.val))
+                .attr("r", 0).attr("fill", d => d.group === "Group A" ? colorA : colorB)
+                .on("click", function(event, d) { removePoint(d.id, d.group); })
+                .call(enter => enter.transition().duration(300).attr("r", 6)),
+            update => update.call(update => update.transition().duration(300)
+                    .attr("cx", d => xScale(d.group) + centerOffset + d.jitter).attr("cy", d => yScale(d.val))),
+            exit => exit.transition().duration(200).attr("r", 0).remove()
+        );
+
+        function updateCol(grp, stats) {
+            document.getElementById(`n${grp}`).innerText = stats.n;
+            document.getElementById(`mean${grp}`).innerText = stats.mean.toFixed(2);
+            document.getElementById(`var${grp}`).innerText = stats.variance.toFixed(2); // Using variance instead of SD to align with formulas
+            document.getElementById(`max${grp}`).innerText = stats.max.toFixed(2);
+            document.getElementById(`q3${grp}`).innerText = stats.q3.toFixed(2);
+            document.getElementById(`med${grp}`).innerText = stats.median.toFixed(2);
+            document.getElementById(`q1${grp}`).innerText = stats.q1.toFixed(2);
+            document.getElementById(`min${grp}`).innerText = stats.min.toFixed(2);
+        }
+        
+        updateCol('A', statsA); updateCol('B', statsB);
+
+        // Update Student Dashboard
+        document.getElementById('student-p').innerText = tests.student.p.toFixed(4);
+        document.getElementById('student-t').innerText = tests.student.t.toFixed(3);
+        document.getElementById('student-df').innerText = tests.student.df.toFixed(0);
+        
+        const studentBox = document.getElementById('student-box');
+        const studentStatus = document.getElementById('student-status');
+        if (tests.student.p < 0.05) {
+            studentBox.classList.add('significant'); studentStatus.innerText = "Significant!";
+        } else {
+            studentBox.classList.remove('significant'); studentStatus.innerText = "Not Sig.";
+        }
+
+        // Update Welch Dashboard
+        document.getElementById('welch-p').innerText = tests.welch.p.toFixed(4);
+        document.getElementById('welch-t').innerText = tests.welch.t.toFixed(3);
+        document.getElementById('welch-df').innerText = tests.welch.df.toFixed(1);
+        
+        const welchBox = document.getElementById('welch-box');
+        const welchStatus = document.getElementById('welch-status');
+        if (tests.welch.p < 0.05) {
+            welchBox.classList.add('significant'); welchStatus.innerText = "Significant!";
+        } else {
+            welchBox.classList.remove('significant'); welchStatus.innerText = "Not Sig.";
+        }
+
+        // Enable button if EITHER is significant
+        const btnPublish = document.getElementById('btn-publish');
+        if (tests.student.p < 0.05 || tests.welch.p < 0.05) {
+            btnPublish.disabled = false;
+        } else {
+            btnPublish.disabled = true;
+        }
+    }
+
+    function publishPaper() { document.getElementById('success-modal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('success-modal').style.display = 'none'; initSimulation(); }
+
+    initSimulation();
+</script>
+
+</body>
+</html>
